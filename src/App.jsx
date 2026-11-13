@@ -71,41 +71,67 @@ function Header() {
   const { pathname } = useLocation()
   useEffect(() => { setOpen(false); window.scrollTo(0, 0) }, [pathname])
   useEffect(() => { const f = () => setScrolled(window.scrollY > 20); addEventListener('scroll', f); return () => removeEventListener('scroll', f) }, [])
+  const Logo = () => (
+    <Link to="/" className="flex flex-col gap-1.5">
+      <span className="font-brand text-3xl leading-none"><span className="stone">RAID</span><span className="brush mx-0.5 inline-block -rotate-6">OR</span><span className="stone">DIE</span></span>
+      <span className="flex w-fit items-center gap-1.5 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-xs text-green-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-green-400" style={{ animation: 'pulse-dot 2s infinite' }} /> {t.common.online}
+      </span>
+    </Link>
+  )
+  const NavList = ({ id }) => (
+    <nav className="flex flex-col gap-1">
+      {NAV.map(([to, key, Icon], i) => (
+        <motion.div key={to} initial={{ x: -16, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.04 }}>
+          <NavLink to={to} className={({ isActive }) => `group relative flex items-center gap-3 rounded-xl px-4 py-3 font-display text-lg font-bold uppercase tracking-wide transition-colors ${isActive ? 'text-white' : 'text-white/55 hover:bg-white/5 hover:text-white'}`}>
+            {({ isActive }) => <>
+              {isActive && <motion.span layoutId={id} className="absolute inset-0 rounded-xl border border-blood/40 bg-gradient-to-r from-blood/25 to-transparent"><span className="absolute top-2 bottom-2 left-0 w-1 rounded-r bg-blood shadow-[0_0_12px] shadow-blood" /></motion.span>}
+              <Icon size={19} className={`relative transition-colors ${isActive ? 'text-blood' : 'group-hover:text-blood'}`} /><span className="relative">{t.nav[key]}</span>
+            </>}
+          </NavLink>
+        </motion.div>
+      ))}
+    </nav>
+  )
+  const SideFooter = () => (
+    <a href={SITE.discord} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-xl border border-blood/50 bg-blood/10 px-4 py-3 font-display font-bold uppercase tracking-wide hover:bg-blood/25">
+      <DiscordIcon size={18} /> Discord
+    </a>
+  )
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all ${scrolled || open ? 'border-b border-white/10 bg-ink/85 backdrop-blur-xl' : ''}`}>
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
-        <Link to="/" className="flex shrink-0 items-center gap-3">
-          <span className="font-brand text-2xl"><span className="stone">RAID</span><span className="brush mx-0.5 inline-block -rotate-6">OR</span><span className="stone">DIE</span></span>
-          <span className="hidden items-center gap-1.5 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-xs text-green-400 sm:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-400" style={{ animation: 'pulse-dot 2s infinite' }} /> {t.common.online}
-          </span>
-        </Link>
-        <nav className="hidden items-center xl:flex">
-          {NAV.map(([to, key, Icon]) => (
-            <NavLink key={to} to={to} className={({ isActive }) => `relative flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm transition-colors ${isActive ? 'text-white' : 'text-white/60 hover:text-white'}`}>
-              {({ isActive }) => <><Icon size={15} />{t.nav[key]}{isActive && <motion.span layoutId="nav" className="absolute inset-x-2 -bottom-0.5 h-0.5 rounded bg-blood" />}</>}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <LangSwitch />
-          <a href={SITE.discord} target="_blank" rel="noreferrer" className="hidden rounded-lg bg-blood p-2 hover:bg-red-500 sm:block" aria-label="Discord"><DiscordIcon size={18} /></a>
-          <UserMenu />
-          <button onClick={() => setOpen(!open)} className="rounded-lg border border-white/10 p-2 xl:hidden" aria-label="Menu">{open ? <X size={18} /> : <Menu size={18} />}</button>
+    <>
+      {/* Barra lateral (escritorio) */}
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col gap-8 border-r border-white/10 bg-ink/80 p-5 backdrop-blur-xl lg:flex">
+        <Logo />
+        <div className="flex-1 overflow-y-auto"><NavList id="side" /></div>
+        <SideFooter />
+      </aside>
+
+      {/* Barra superior: idioma + Steam (y menú en móvil) */}
+      <header className={`fixed top-0 right-0 left-0 z-40 transition-all lg:left-64 ${scrolled ? 'border-b border-white/10 bg-ink/80 backdrop-blur-xl' : ''}`}>
+        <div className="flex h-16 items-center justify-between gap-2 px-4 lg:justify-end lg:px-8">
+          <Link to="/" className="font-brand text-2xl lg:hidden"><span className="stone">RAID</span><span className="brush mx-0.5 inline-block -rotate-6">OR</span><span className="stone">DIE</span></Link>
+          <div className="flex items-center gap-2">
+            <LangSwitch />
+            <UserMenu />
+            <button onClick={() => setOpen(true)} className="rounded-lg border border-white/10 p-2 lg:hidden" aria-label="Menu"><Menu size={18} /></button>
+          </div>
         </div>
-      </div>
+      </header>
+
+      {/* Cajón lateral (móvil) */}
       <AnimatePresence>
-        {open && (
-          <motion.nav initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden xl:hidden">
-            {NAV.map(([to, key, Icon], i) => (
-              <motion.div key={to} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.04 }}>
-                <NavLink to={to} className="flex items-center gap-3 px-6 py-3 font-display text-xl uppercase text-white/80 hover:text-blood"><Icon size={18} />{t.nav[key]}</NavLink>
-              </motion.div>
-            ))}
-          </motion.nav>
-        )}
+        {open && <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden" />
+          <motion.aside initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 26, stiffness: 260 }}
+            className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col gap-8 border-r border-white/10 bg-ink p-5 lg:hidden">
+            <div className="flex items-start justify-between"><Logo /><button onClick={() => setOpen(false)} className="rounded-lg border border-white/10 p-2" aria-label="Close"><X size={18} /></button></div>
+            <div className="flex-1 overflow-y-auto"><NavList id="drawer" /></div>
+            <SideFooter />
+          </motion.aside>
+        </>}
       </AnimatePresence>
-    </header>
+    </>
   )
 }
 
@@ -128,7 +154,7 @@ function LoginError() {
 export default function App() {
   const location = useLocation()
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen lg:pl-64">
       <Header />
       <LoginError />
       <AnimatePresence mode="wait">
