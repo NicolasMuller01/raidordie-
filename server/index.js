@@ -7,8 +7,12 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import crypto from 'node:crypto'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const PORT = process.env.API_PORT || 3001
+// --prod (npm start): sirve también la web compilada en dist/ y usa el PORT del hosting
+const PROD = process.argv.includes('--prod')
+const PORT = PROD ? (process.env.PORT || 3000) : (process.env.API_PORT || 3001)
 const PUBLIC_URL = process.env.PUBLIC_URL || 'http://localhost:5173'
 const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 const STEAM_API_KEY = process.env.STEAM_API_KEY || ''
@@ -63,4 +67,11 @@ app.get('/api/me', async (req, res) => {
 
 app.post('/auth/logout', (req, res) => { res.clearCookie('steamid'); res.json({ ok: true }) })
 
-app.listen(PORT, () => console.log(`API en http://localhost:${PORT}`))
+if (PROD) {
+  const dist = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist')
+  app.use(express.static(dist))
+  app.get(/^(?!\/(api|auth)\/).*/, (req, res) => res.sendFile(path.join(dist, 'index.html')))
+}
+
+app.set('trust proxy', 1)
+app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}${PROD ? ' (producción)' : ''}`))
