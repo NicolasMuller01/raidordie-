@@ -16,7 +16,14 @@ import { mountPayments } from './payments.js'
 // --prod (npm start): sirve también la web compilada en dist/ y usa el PORT del hosting
 const PROD = process.argv.includes('--prod')
 const PORT = PROD ? (process.env.PORT || 3000) : (process.env.API_PORT || 3001)
-const PUBLIC_URL = process.env.PUBLIC_URL || 'http://localhost:5173'
+// Normaliza PUBLIC_URL: quita espacios, prefijos repetidos ("http:https://...") y "/" finales
+function cleanUrl(raw) {
+  const s = String(raw || '').trim()
+  const m = s.match(/https?:\/\/[^\s/]+/g)
+  return m ? m[m.length - 1] : 'http://localhost:5173'
+}
+const PUBLIC_URL = cleanUrl(process.env.PUBLIC_URL)
+if (process.env.PUBLIC_URL && PUBLIC_URL !== process.env.PUBLIC_URL) console.warn(`PUBLIC_URL corregida: "${process.env.PUBLIC_URL}" -> "${PUBLIC_URL}"`)
 const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 const STEAM_API_KEY = process.env.STEAM_API_KEY || ''
 const OPENID = 'https://steamcommunity.com/openid/login'
