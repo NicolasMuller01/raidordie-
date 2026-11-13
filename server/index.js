@@ -25,7 +25,11 @@ const app = express()
 app.use(cookieParser(SECRET))
 mountPayments(app, { publicUrl: PUBLIC_URL })
 
+// Solo rutas internas ("/shop"), nunca otra web ("//evil.com", "https://...")
+const safeNext = n => (typeof n === 'string' && /^\/(?!\/)[\w\-/?=&%.]*$/.test(n) ? n : '/')
+
 app.get('/auth/steam', (req, res) => {
+  res.cookie('next', safeNext(req.query.next), { httpOnly: true, sameSite: 'lax', maxAge: 10 * 6e4 })
   const params = new URLSearchParams({
     'openid.ns': 'http://specs.openid.net/auth/2.0',
     'openid.mode': 'checkid_setup',
@@ -49,9 +53,11 @@ app.get('/auth/steam/return', async (req, res) => {
     const m = String(q['openid.claimed_id']).match(/^https:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/)
     if (!m) throw new Error('bad id')
     res.cookie('steamid', m[1], { signed: true, httpOnly: true, sameSite: 'lax', secure: PUBLIC_URL.startsWith('https'), maxAge: 30 * 864e5 })
-    res.redirect('/')
+    const next = safeNext(req.cookies.next)
+    res.clearCookie('next')
+    res.redirect(`${PUBLIC_URL}${next}`)
   } catch {
-    res.redirect('/?login=error')
+    res.redirect(`${PUBLIC_URL}/?login=error`)
   }
 })
 

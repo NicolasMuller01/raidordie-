@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     fetch('/api/me').then(r => r.json()).then(d => setUser(d.user)).catch(() => setUser(null)).finally(() => setLoading(false))
   }, [])
-  const login = () => { window.location.href = '/auth/steam' }
+  const login = () => { window.location.href = '/auth/steam?next=' + encodeURIComponent(location.pathname) }
   const logout = async () => { await fetch('/auth/logout', { method: 'POST' }).catch(() => {}); setUser(null) }
   return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>
 }
