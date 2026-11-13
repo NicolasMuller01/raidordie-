@@ -5,6 +5,7 @@
 //   SESSION_SECRET  cadena larga y aleatoria para firmar cookies
 //   STEAM_API_KEY   opcional, para mostrar nombre y avatar (https://steamcommunity.com/dev/apikey)
 //   Pagos y RCON: ver server/payments.js
+import './env.js' // primero: carga .env antes que el resto de módulos
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import crypto from 'node:crypto'

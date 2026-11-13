@@ -5,3 +5,4 @@ dist/
 .claude/
 *.log
 orders.json
+!.env.example
