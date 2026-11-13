@@ -4,11 +4,13 @@
 //   PUBLIC_URL      URL pública de la web (por defecto http://localhost:5173)
 //   SESSION_SECRET  cadena larga y aleatoria para firmar cookies
 //   STEAM_API_KEY   opcional, para mostrar nombre y avatar (https://steamcommunity.com/dev/apikey)
+//   Pagos y RCON: ver server/payments.js
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { mountPayments } from './payments.js'
 
 // --prod (npm start): sirve también la web compilada en dist/ y usa el PORT del hosting
 const PROD = process.argv.includes('--prod')
@@ -20,6 +22,7 @@ const OPENID = 'https://steamcommunity.com/openid/login'
 
 const app = express()
 app.use(cookieParser(SECRET))
+mountPayments(app, { publicUrl: PUBLIC_URL })
 
 app.get('/auth/steam', (req, res) => {
   const params = new URLSearchParams({

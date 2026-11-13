@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { Page, SectionHeader, SpotlightCard, GlowCard, Reveal, CountUp } from '../components/ui'
 import { SITE, SERVERS, SHOP, CATEGORIES, POINTS_ICON, PLAYERS, TRIBES, RATES, LEVELS, LIMITS, VOTE_SITES, TOP_VOTERS, POLL_COUNTS } from '../data/site'
+import { PACKS } from '../../shared/packs'
 import { useLang } from '../i18n'
 import { useAuth, RequireSteam } from '../auth'
 
@@ -75,6 +76,7 @@ export function Shop() {
   return (
     <Page>
       <SectionHeader label={t.shop.label} title={t.shop.title} sub={t.shop.sub} />
+      <BuyPoints />
       <div className="mb-6 flex flex-wrap justify-center gap-2">
         {['all', ...CATEGORIES].map(c => {
           const n = c === 'all' ? SHOP.length : SHOP.filter(i => i.cat === c).length
@@ -324,5 +326,49 @@ export function Invite() {
         })}
       </div>
     </Page>
+  )
+}
+
+/* ---------- Comprar puntos (Stripe) ---------- */
+function BuyPoints() {
+  const { t } = useLang()
+  const { user, login } = useAuth()
+  const [busy, setBusy] = useState('')
+  const [msg, setMsg] = useState(() => ({ 1: 'ok', 0: 'cancel' })[new URLSearchParams(location.search).get('paid')] || '')
+  const p = t.shop.pts
+  const buy = async pack => {
+    if (!user) return login()
+    setBusy(pack.id); setMsg('')
+    try {
+      const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packId: pack.id }) })
+      const d = await r.json()
+      if (d.url) { window.location.href = d.url; return }
+      setMsg('error')
+    } catch { setMsg('error') }
+    setBusy('')
+  }
+  return (
+    <section className="mb-14">
+      <h3 className="mb-1 flex items-center justify-center gap-2 font-display text-3xl font-bold uppercase"><POINTS_ICON className="text-yellow-400" /> {p.title}</h3>
+      <p className="mb-6 text-center text-sm text-white/60">{p.sub}</p>
+      {msg && <div className={`mx-auto mb-6 max-w-md rounded-xl border p-3 text-center text-sm ${msg === 'ok' ? 'border-green-500/40 bg-green-500/10 text-green-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>{p[msg]}</div>}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {PACKS.map(pack => (
+          <GlowCard key={pack.id} className={pack.popular ? 'from-blood to-ember' : ''}>
+            {pack.popular && <span className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-blood px-3 py-0.5 text-xs font-bold uppercase">{p.popular}</span>}
+            <div className="text-center">
+              <POINTS_ICON size={34} className="mx-auto mb-2 text-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,.6)]" />
+              <div className="font-display text-4xl font-bold">{pack.points.toLocaleString()}</div>
+              <div className="text-xs uppercase tracking-widest text-white/50">pts</div>
+              {pack.bonus && <div className="mt-1 text-xs font-bold text-green-400">+{pack.bonus}% {p.bonus}</div>}
+              <button onClick={() => buy(pack)} disabled={!!busy} className="mt-4 w-full rounded-lg bg-blood py-2 font-display text-lg font-bold hover:bg-red-500 disabled:opacity-60">
+                {busy === pack.id ? '…' : `$${pack.usd} USD`}
+              </button>
+            </div>
+          </GlowCard>
+        ))}
+      </div>
+      <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/40"><ShieldAlert size={14} /> {p.secure}</p>
+    </section>
   )
 }
