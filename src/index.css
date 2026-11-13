@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@theme {
+  --font-display: "Rajdhani", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-brand: "Rubik Wet Paint", cursive;
+  --font-brush: "Rubik Wet Paint", cursive;
+  --color-blood: #e11d2e;
+  --color-ember: #ff6a2b;
+  --color-ink: #07070a;
+}
+html { scroll-behavior: smooth; }
+body { background: #07070a; color: #e7e7ea; font-family: var(--font-sans); }
+@keyframes shine { 0% { background-position: 100% } 100% { background-position: -100% } }
+.shiny { background: linear-gradient(120deg,#a1a1aa 40%,#fff 50%,#a1a1aa 60%); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 3s linear infinite; }
+@keyframes aurora { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(8%,-6%) scale(1.15) } }
+@keyframes marquee { to { transform: translateX(-50%) } }
+@keyframes pulse-dot { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.6) } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0) } }
+/* Logo estilo piedra con lava */
+.stone { background: linear-gradient(180deg,#ffffff 0%,#f1e4dc 55%,#ff8a4a 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 6px rgba(255,90,20,.55)) drop-shadow(0 4px 0 #1a0a06); }
+.brush { font-family: var(--font-brush); color: #e11d2e; text-shadow: 0 0 18px rgba(225,29,46,.7); }
